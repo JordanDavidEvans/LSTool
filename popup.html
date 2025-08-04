@@ -6,10 +6,12 @@
   <style>
     body { min-width: 200px; font-family: Arial, sans-serif; }
     #log { max-height: 200px; overflow-y: auto; white-space: pre-wrap; }
+    #module { margin-bottom: 0.5em; width: 100%; }
   </style>
 </head>
 <body>
-  <button id="start">Start Crawl</button>
+  <select id="module"></select>
+  <button id="start">Run</button>
   <pre id="log"></pre>
   <script type="module" src="popup.js"></script>
 </body>

@@ -1,4 +1,19 @@
-export async function crawlSite(startUrl, onProgress = () => {}, onError = () => {}) {
+// Recursive crawler module. Traverses all internal links starting from the
+// active page and collates HTML for later analysis.
+// Exports metadata used by the popup and background scripts.
+
+export const id = 'crawler';
+export const name = 'Recursive Crawler';
+
+/**
+ * Crawl all pages on the same origin as startUrl.
+ * @param {string} startUrl - Starting page URL.
+ * @param {Object} callbacks - Optional logging callbacks.
+ * @param {Function} callbacks.log - Called with progress messages.
+ * @param {Function} callbacks.error - Called when an error occurs.
+ * @returns {Promise<Object>} Crawl results including pages and collated HTML.
+ */
+export async function run(startUrl, { log = () => {}, error = () => {} } = {}) {
   const origin = new URL(startUrl).origin;
   const toVisit = [startUrl];
   const visited = new Set();
@@ -8,7 +23,7 @@ export async function crawlSite(startUrl, onProgress = () => {}, onError = () =>
     const url = toVisit.shift();
     if (visited.has(url)) continue;
     visited.add(url);
-    onProgress(`Visiting ${url}`);
+    log(`Visiting ${url}`);
 
     try {
       const response = await fetch(url);
@@ -31,13 +46,14 @@ export async function crawlSite(startUrl, onProgress = () => {}, onError = () =>
         }
       });
     } catch (e) {
-      onError(`Failed to process ${url}: ${e.message}`);
+      error(`Failed to process ${url}: ${e.message}`);
     }
   }
 
   const collatedHtml = pages
     .map(p => `<!-- ${p.url} -->\n${p.html}`)
     .join('\n');
+
 
   return { pages, collatedHtml };
 }

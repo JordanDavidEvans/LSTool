@@ -1,30 +1,42 @@
-import { crawlSite } from './modules/crawler.js';
+import { modules } from './modules/index.js';
 
+// Safely send a message to the popup if it is open.
 const safeSendMessage = (msg) => {
   try {
     chrome.runtime.sendMessage(msg).catch(() => {});
   } catch (e) {
-    // ignore
+    // ignore errors when no listeners are available
   }
 };
 
+// Find a module by its identifier.
+const getModule = (id) => modules.find(m => m.id === id);
+
 chrome.runtime.onMessage.addListener(async (request) => {
-  if (request.type === 'start-crawl') {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !tab.url) {
-      safeSendMessage({ type: 'error', message: 'No active tab to crawl.' });
+  if (request.type === 'run-module') {
+    const mod = getModule(request.moduleId);
+    if (!mod) {
+      safeSendMessage({ type: 'error', message: `Unknown module: ${request.moduleId}` });
       return;
     }
-    safeSendMessage({ type: 'log', message: `Starting crawl at ${tab.url}` });
+
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!tab || !tab.url) {
+      safeSendMessage({ type: 'error', message: 'No active tab to run module.' });
+      return;
+    }
+
+    safeSendMessage({ type: 'log', message: `Running ${mod.name} at ${tab.url}` });
     try {
-      const { pages, collatedHtml } = await crawlSite(
+
         tab.url,
-        msg => safeSendMessage({ type: 'log', message: msg }),
-        msg => safeSendMessage({ type: 'error', message: msg })
+        {
+          log: (msg) => safeSendMessage({ type: 'log', message: msg }),
+          error: (msg) => safeSendMessage({ type: 'error', message: msg })
+        }
       );
-      await chrome.storage.local.set({ report: pages, collated: collatedHtml });
+
       safeSendMessage({ type: 'done' });
-      chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
     } catch (e) {
       safeSendMessage({ type: 'error', message: e.message });
     }
