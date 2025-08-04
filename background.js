@@ -17,12 +17,12 @@ chrome.runtime.onMessage.addListener(async (request) => {
     }
     safeSendMessage({ type: 'log', message: `Starting crawl at ${tab.url}` });
     try {
-      const data = await crawlSite(
+      const { pages, collatedHtml } = await crawlSite(
         tab.url,
         msg => safeSendMessage({ type: 'log', message: msg }),
         msg => safeSendMessage({ type: 'error', message: msg })
       );
-      await chrome.storage.local.set({ report: data });
+      await chrome.storage.local.set({ report: pages, collated: collatedHtml });
       safeSendMessage({ type: 'done' });
       chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
     } catch (e) {
