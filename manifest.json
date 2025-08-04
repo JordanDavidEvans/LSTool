@@ -1,15 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Domain Header Crawler",
+  "name": "Header Structure Crawler",
   "version": "1.0",
-  "description": "Crawl the current website and list headers for all internal pages.",
-  "permissions": ["storage", "scripting", "tabs"],
-  "host_permissions": ["<all_urls>"],
+  "description": "Crawls internal pages and summarizes headers in a new tab.",
+  "permissions": ["scripting", "activeTab"],
+  "action": {
+    "default_title": "Crawl page headers"
+  },
   "background": {
     "service_worker": "background.js"
-  },
-  "action": {
-    "default_title": "Crawl site headers",
-    "default_popup": "results.html"
   }
 }
