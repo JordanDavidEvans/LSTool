@@ -27,6 +27,11 @@ export async function run(startUrl, { log = () => {}, error = () => {} } = {}) {
 
     try {
       const response = await fetch(url);
+      if (!response.ok) {
+        error(`Failed to fetch ${url}: ${response.status} ${response.statusText}`);
+        continue;
+      }
+
       const text = await response.text();
       pages.push({ url, html: text });
 
@@ -36,7 +41,12 @@ export async function run(startUrl, { log = () => {}, error = () => {} } = {}) {
       doc.querySelectorAll('a[href]').forEach(a => {
         const href = a.getAttribute('href');
         if (!href) return;
-        const nextUrl = new URL(href, url);
+        let nextUrl;
+        try {
+          nextUrl = new URL(href, url);
+        } catch {
+          return;
+        }
         if (
           nextUrl.origin === origin &&
           !visited.has(nextUrl.href) &&
