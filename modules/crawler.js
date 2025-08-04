@@ -33,10 +33,15 @@ export async function run(startUrl, { log = () => {}, error = () => {} } = {}) {
       }
 
       const text = await response.text();
-      pages.push({ url, html: text });
 
       const parser = new DOMParser();
       const doc = parser.parseFromString(text, 'text/html');
+
+      // Remove potentially unsafe elements and capture only body content.
+      const body = doc.body.cloneNode(true);
+      body.querySelectorAll('script, style').forEach(el => el.remove());
+
+      pages.push({ url, html: body.innerHTML });
 
       doc.querySelectorAll('a[href]').forEach(a => {
         const href = a.getAttribute('href');
@@ -61,9 +66,15 @@ export async function run(startUrl, { log = () => {}, error = () => {} } = {}) {
   }
 
   const collatedHtml = pages
-    .map(p => `<!-- ${p.url} -->\n${p.html}`)
+    .map(
+      (p) =>
+        `<div class="page"><div class="page-url"><a href="${p.url}" target="_blank">${p.url}</a></div>${p.html}</div>`
+    )
     .join('\n');
 
+  // Store the collated HTML and open the report page for viewing.
+  await chrome.storage.local.set({ collatedHtml });
+  await chrome.runtime.openOptionsPage();
 
   return { pages, collatedHtml };
 }
