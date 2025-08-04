@@ -1,4 +1,4 @@
-export async function crawlSite(startUrl) {
+export async function crawlSite(startUrl, onProgress = () => {}, onError = () => {}) {
   const origin = new URL(startUrl).origin;
   const toVisit = [startUrl];
   const visited = new Set();
@@ -8,6 +8,7 @@ export async function crawlSite(startUrl) {
     const url = toVisit.shift();
     if (visited.has(url)) continue;
     visited.add(url);
+    onProgress(`Visiting ${url}`);
 
     try {
       const response = await fetch(url);
@@ -32,7 +33,7 @@ export async function crawlSite(startUrl) {
         }
       });
     } catch (e) {
-      console.error('Failed to process', url, e);
+      onError(`Failed to process ${url}: ${e.message}`);
     }
   }
 
