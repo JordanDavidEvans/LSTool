@@ -3,14 +3,22 @@
   "name": "QA Explorer",
   "version": "0.1.0",
   "description": "Modular extension for website QA. Crawls site headers.",
-  "permissions": ["activeTab", "storage", "scripting"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
   "action": {
-    "default_title": "Run QA Explorer"
+    "default_title": "Run QA Explorer",
+    "default_popup": "popup.html"
   },
   "options_ui": {
     "page": "report.html",
