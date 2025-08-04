@@ -41,7 +41,12 @@ export async function run(startUrl, { log = () => {}, error = () => {} } = {}) {
       const body = doc.body.cloneNode(true);
       body.querySelectorAll('script, style').forEach(el => el.remove());
 
-      pages.push({ url, html: body.innerHTML });
+      const headers = [];
+      body.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((h) => {
+        headers.push({ level: h.tagName.toLowerCase(), text: h.textContent.trim() });
+      });
+
+      pages.push({ url, html: body.innerHTML, headers });
 
       doc.querySelectorAll('a[href]').forEach(a => {
         const href = a.getAttribute('href');
@@ -72,9 +77,11 @@ export async function run(startUrl, { log = () => {}, error = () => {} } = {}) {
     )
     .join('\n');
 
-  // Store the collated HTML and open the report page for viewing.
-  await chrome.storage.local.set({ collatedHtml });
+  const headerSummary = pages.map((p) => ({ url: p.url, headers: p.headers }));
+
+  // Store the collated HTML and header summary then open the report page for viewing.
+  await chrome.storage.local.set({ collatedHtml, headerSummary });
   await chrome.runtime.openOptionsPage();
 
-  return { pages, collatedHtml };
+  return { pages, collatedHtml, headerSummary };
 }
