@@ -2,7 +2,7 @@ export async function crawlSite(startUrl, onProgress = () => {}, onError = () =>
   const origin = new URL(startUrl).origin;
   const toVisit = [startUrl];
   const visited = new Set();
-  const results = [];
+  const pages = [];
 
   while (toVisit.length) {
     const url = toVisit.shift();
@@ -13,22 +13,20 @@ export async function crawlSite(startUrl, onProgress = () => {}, onError = () =>
     try {
       const response = await fetch(url);
       const text = await response.text();
+      pages.push({ url, html: text });
+
       const parser = new DOMParser();
       const doc = parser.parseFromString(text, 'text/html');
-
-      const headers = [];
-      for (let i = 1; i <= 6; i++) {
-        doc.querySelectorAll(`h${i}`).forEach(h => {
-          headers.push({ level: `h${i}`, text: h.textContent.trim() });
-        });
-      }
-      results.push({ url, headers });
 
       doc.querySelectorAll('a[href]').forEach(a => {
         const href = a.getAttribute('href');
         if (!href) return;
         const nextUrl = new URL(href, url);
-        if (nextUrl.origin === origin && !visited.has(nextUrl.href)) {
+        if (
+          nextUrl.origin === origin &&
+          !visited.has(nextUrl.href) &&
+          !toVisit.includes(nextUrl.href)
+        ) {
           toVisit.push(nextUrl.href);
         }
       });
@@ -37,5 +35,9 @@ export async function crawlSite(startUrl, onProgress = () => {}, onError = () =>
     }
   }
 
-  return results;
+  const collatedHtml = pages
+    .map(p => `<!-- ${p.url} -->\n${p.html}`)
+    .join('\n');
+
+  return { pages, collatedHtml };
 }
