@@ -1,27 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "QA Explorer",
-  "version": "0.1.0",
-  "description": "Modular extension for website QA. Crawls site headers.",
-  "permissions": [
-    "activeTab",
-    "storage",
-    "scripting",
-    "tabs"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "name": "Domain Header Crawler",
+  "version": "1.0",
+  "description": "Crawl the current website and list headers for all internal pages.",
+  "permissions": ["storage", "scripting", "tabs"],
+  "host_permissions": ["<all_urls>"],
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
+    "service_worker": "background.js"
   },
   "action": {
-    "default_title": "Run QA Explorer",
-    "default_popup": "popup.html"
-  },
-  "options_ui": {
-    "page": "report.html",
-    "open_in_tab": true
+    "default_title": "Crawl site headers",
+    "default_popup": "results.html"
   }
 }
