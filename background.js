@@ -28,13 +28,14 @@ chrome.runtime.onMessage.addListener(async (request) => {
 
     safeSendMessage({ type: 'log', message: `Running ${mod.name} at ${tab.url}` });
     try {
-      await mod.run(
+
         tab.url,
         {
           log: (msg) => safeSendMessage({ type: 'log', message: msg }),
           error: (msg) => safeSendMessage({ type: 'error', message: msg })
         }
       );
+
       safeSendMessage({ type: 'done' });
     } catch (e) {
       safeSendMessage({ type: 'error', message: e.message });

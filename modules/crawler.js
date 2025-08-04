@@ -54,8 +54,6 @@ export async function run(startUrl, { log = () => {}, error = () => {} } = {}) {
     .map(p => `<!-- ${p.url} -->\n${p.html}`)
     .join('\n');
 
-  await chrome.storage.local.set({ report: pages, collated: collatedHtml });
-  chrome.tabs.create({ url: chrome.runtime.getURL('report.html') });
 
   return { pages, collatedHtml };
 }
